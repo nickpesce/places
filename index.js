@@ -60,9 +60,11 @@ app.use(flash());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.engine('handlebars', exphbs({ defaultLayout: 'main' , partialsDir: 'views/partials/'}));
+
+app.set('views', __dirname+'/views');
+app.engine('handlebars', exphbs({ defaultLayout: 'main',layoutsDir: __dirname+"/views/layouts/",  partialsDir: __dirname+'/views/partials/'}));
 app.set('view engine', 'handlebars');
-app.use('/public', express.static('public'));
+app.use('/public', express.static(__dirname+'/public'));
 
 app.get('/', function(req, res) {
     sort(req, res, {name: 1}, "PLACES", "home");
@@ -366,6 +368,6 @@ function loginGate(req, res, redirect) {
     return true;
 };
 
-http.listen(3000, function() {
-    console.log('PLACES listening on port 3000!');
+http.listen(1029, function() {
+    console.log('PLACES listening on port 1029!');
 });
