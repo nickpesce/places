@@ -19,6 +19,9 @@ var io = require('socket.io')(http);
 var passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy;
 
+
+
+var userlock = [];
 dotenv.load();
 
 mongoose.connect(process.env.MONGODB);
@@ -221,13 +224,18 @@ app.post('/place/:address/api/set_pixel', function(req, res) {
             if(entry) {
                 //Seconds until valid
                 var d = place.refresh - ((new Date() - entry.time)/1000.0);
+                if(_.contains(userlock, user.username)) return res.send(403, "You are placing pixels too quickly.");
                 if(d > 0) return res.send(403, "You must wait " + d + " more seconds before drawing another pixel!");
+                userlock.push(user.username);
                 entry.time = new Date();
             } else {
                 user.placeTimes.push({address: address, time: new Date()});
             }
             user.save(function(err) {
                 if(err) throw err;
+                if(_.contains(userlock, user.username)) {
+                    userlock.splice(userlock.indexOf(user.username), 1);
+                }
             });
             place.pixels[x + y * place.width].color = color;
             place.pixels[x + y * place.width].username = user.username;
@@ -368,6 +376,6 @@ function loginGate(req, res, redirect) {
     return true;
 };
 
-http.listen(1029, function() {
-    console.log('PLACES listening on port 1029!');
+http.listen(3000, function() {
+    console.log('PLACES listening on port 3000!');
 });
