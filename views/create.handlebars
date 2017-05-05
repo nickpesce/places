@@ -1,0 +1,34 @@
+<h2 class="page-header">Create a Place!</h2>
+<form method="post" action="/api/create">
+    <div class="form-group">
+        <label for="inputName">Place</label>
+        <input type="text" class="form-control" id="inputName" aria-describedby="nameHelp" name="name" required="required" placeholder="Place name"/>
+        <small id="nameHelp" class="form-text text-muted">How your place will appear in menus</small>
+    </div>
+    <div class="form-group">
+        <label for="inputRefresh">Cooldown</label>
+        <input type="number" min=0 class="form-control" id="inputRefresh" name="refresh" required="required" placeholder="Seconds"/>
+    </div>
+    <div class="form-group">
+        <label for="textareaDecription">Description</label>
+        <textarea class="form-control" id="textareaDescription" required="required" placeholder="Description" aria-describedby="descriptionHelp" name="description" rows="2"></textarea>
+        <small id="descriptionHelp" class="form-text text-muted">What should the picture look like?</small>
+    </div>
+    <div class="form-group">
+        <label>Size</label>
+        
+        <div class="inline-group">
+            <input type="number" min=1  max=100 class="inline-form-control" id="inputWidth" aria-describedby="sizeHelp" name="width" required="required" placeholder="Width"></input>
+            <input type="number" min=1 max=100 class="inline-form-control" id="inputWidth" aria-describedby="sizeHelp" name="height" required="required" placeholder="Height"></input>
+        </div>
+        <small id="sizeHelp" class="form-text text-muted">How big should the canvas be?</small>
+    </div>
+    <button type="submit" value="submit" class="btn btn-primary">Create</button>
+</form>
+
+<script>
+    $(document).ready(function(){
+        $('.nav li').removeClass('active');
+        $('#nav_create').addClass('active');
+    });
+</script>

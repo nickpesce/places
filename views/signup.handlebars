@@ -1,0 +1,75 @@
+<h2 class="page-header">signup</h2>
+{{#each messages}}
+    <div class="alert alert-danger">{{this}}</div>
+{{/each}}
+<form method="post">
+    <input type="hidden" name="redirect" value="{{redirect}}"/>
+    <div id="usernameGroup" class="form-group">
+        <label for="inputUser">Username</label>
+        <input type="text" class="form-control" id="inputUser" name="username" required="required" placeholder="username"/>
+    </div>
+    <div id="passGroup" class="form-group">
+        <label for="inpupPass">Password</label>
+        <input type="password" class="form-control" id="inputPass" name="password" required="required" placeholder="password"/>
+    </div>
+    <div id="passConfGroup" class="form-group">
+        <input type="password" class="form-control" id="inputConfPass" name="confPassword" required="required" placeholder="confirm password"/>
+    </div>
+    <button type="submit" id="submit" value="submit" class="btn btn-success btn-lg" disabled=true formaction="/api/signup">Create</button>
+</form>
+<br/>
+<a href={{#if redirect}}"/login?redirect={{redirect}}"{{else}}"/login"{{/if}}><button type="submit" value="submit" class="btn btn-primary btn-sm">Login</button></a>
+        
+
+<script>
+    var validPass = false,  validName = false;
+    $(document).ready(function(){
+        $('.nav li').removeClass('active');
+        $('#nav_signup').addClass('active');
+        $('#inputPass').on('input', function() {
+            validatePass();
+        });
+        $('#inputConfPass').on('input', function() {
+            validatePass();
+        });
+        $('#inputUser').on('input', function() {
+            validateUsername();
+        });
+    });
+
+function validatePass() {
+    validPass = ($('#inputPass').val() == $('#inputConfPass').val()) && $('#inputPass').val().length > 3;
+    if(validPass) {
+        $('#passConfGroup').addClass('has-success');
+        $('#passGroup').addClass('has-success');
+        $('#passConfGroup').removeClass('has-error');
+        $('#passGroup').removeClass('has-error');
+    }
+    else {
+        $('#passConfGroup').removeClass('has-success');
+        $('#passGroup').removeClass('has-success');
+        $('#passConfGroup').addClass('has-error');
+        $('#passGroup').addClass('has-error');
+    }
+    updateButton();
+}
+
+function validateUsername() {
+    var username = $('#inputUser').val();
+    $.getJSON('/api/user_exists?name='+username, function(exists) {
+        validName = !exists && username.length > 3;
+        if(validName) {
+            $('#usernameGroup').removeClass('has-error');
+            $('#usernameGroup').addClass('has-success');
+        } else {
+            $('#usernameGroup').addClass('has-error');
+            $('#usernameGroup').removeClass('has-success');
+        }
+        updateButton();
+    });
+}
+
+function updateButton() {
+    $('#submit').attr('disabled', !validName || !validPass);
+}
+</script>

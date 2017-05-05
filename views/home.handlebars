@@ -1,0 +1,44 @@
+<h2 class="page-header">{{title}}
+    <small><input id="search" type="text" placeholder="search" style="display: inline"></input></small>
+</h2>
+
+{{#each places}}
+    <div class="place" id="{{this.name}}">
+        <h4 ><a href="/place/{{this.address}}">{{this.name}}</a> <small class="pull-right">{{this.width}} x {{this.height}} ({{this.refresh}} sec.)</small></h4>
+        {{{this.description}}}
+        <h6 class="mb-2 text-muted">created by {{this.author}} on {{this.created}}</h6>
+        <hr/>
+    </div>
+{{else}}
+    <h4>There are no places here. <a href="/create">Make one!</a></h4>
+{{/each}}
+<div id="empty">No places found</div>
+
+<div id="places">
+</div>
+
+<script>
+    $(document).ready(function(){
+        $('.nav li').removeClass('active');
+        $('#nav_{{nav}}').addClass('active');
+        $('#empty').hide();
+        $("#places").append
+    });
+    $("#search").on('input', function() {
+        var query = $("#search").val();
+        var empty = true;
+        $(".place").each(function(){
+            if($(this).attr('id').toLowerCase().startsWith(query.toLowerCase())) {
+                empty = false;
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+        if(empty) {
+            $('#empty').show();
+        }else {
+            $('#empty').hide();
+        }
+    });
+</script>

@@ -1,0 +1,25 @@
+<h2 class="page-header">login</h2>
+{{#each messages}}
+    <div class="alert alert-danger">{{this}}</div>
+{{/each}}
+<form method="post">
+    <input type="hidden" name="redirect" value="{{redirect}}"/>
+    <div class="form-group">
+        <label for="inputUser">Username</label>
+        <input type="text" class="form-control" id="inputUser" name="username" required="required" placeholder="username"/>
+    </div>
+    <div class="form-group">
+        <label for="inputPass">Password</label>
+        <input type="password" class="form-control" id="inputPass" name="password" required="required" placeholder="password"/>
+    </div>
+    <button type="submit" value="submit" class="btn btn-success btn-lg" formaction="/api/login">Login</button>
+</form>
+<br/>
+<a href="/signup{{#if redirect}}?redirect={{redirect}}{{/if}}"><button class="btn btn-primary btn-sm">Create Account</button></a>
+
+<script>
+    $(document).ready(function(){
+        $('.nav li').removeClass('active');
+        $('#nav_account').addClass('active');
+    });
+</script>

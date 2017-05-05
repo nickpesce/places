@@ -1,0 +1,63 @@
+.navbar {
+    margin-bottom: 0px;
+}
+
+.nav-item {
+    cursor: pointer;
+}
+
+#timer{
+    width: 10em;
+    margin: auto;
+    margin-top: 1em;
+    left: 0;
+    right: 0;
+    top: 10;
+    z-index: 100;
+    text-align: center;
+    color: white;
+    position: absolute;
+    font-weight: bold;
+    background: rgba(50, 50, 50, .8);
+}
+
+#placeContainer {
+    padding: 0;
+    line-height: 0;
+    font-size: 0;
+}
+
+#canvasContainer {
+    border: black solid 1px;
+    height: 70vh;
+    width: 70vw;
+    display: block;
+    overflow: hidden;
+    margin: auto;
+    background-color: gray;
+}
+
+#canvas {
+    /*Needed to prevent 'ghosting' 
+     * while dragging and resizing canvas*/
+    outline: 1px solid transparent;
+}
+
+#controls {
+    padding: 5em;
+    width: 70vw;
+}
+
+#controls > button {
+    margin: 5px;
+    border: gray 1px solid;
+}
+
+#controls > button.active {
+    border: gray 2px solid;
+}
+
+#zoom {
+    margin-left: 10px;
+    margin-right: 10px;
+}

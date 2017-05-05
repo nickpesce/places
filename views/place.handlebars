@@ -1,0 +1,223 @@
+<div style="user-select: none;">
+    <h2>{{name}} <small>{{{description}}}</small></h2>
+</hr>
+<div id="timer" class="alert hidden"></div>
+<div id="placeContainer">
+    <div id="canvasContainer">
+        <div id="canvasTranslate">
+            <div id="canvasScale">
+                <canvas id="canvas" style="image-rendering: pixelated"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="controls" class="{{#unless username}}hidden{{/unless}} well center-block text-center">
+        <button class="btn active" id="red"></br></button>
+        <button class="btn" id="orangered"></br></button>
+        <button class="btn" id="orange"></br></button>
+        <button class="btn" id="gold"></br></button>
+        <button class="btn" id="yellow"></br></button>
+        <button class="btn" id="lime"></br></button>
+        <button class="btn" id="yellowgreen"></br></button>
+        <button class="btn" id="green"></br></button>
+        <button class="btn" id="cyan"></br></button>
+        <label for="zoom">Zoom</label>
+        <input data-slider-id="zoom" class="slider" data-slider-value=1 data-slider-min=1 data-slider-max=50></input>
+        <button class="btn" id="lightblue"></br></button>
+        <button class="btn" id="blue"></br></button>
+        <button class="btn" id="indigo"></br></button>
+        <button class="btn" id="magenta"></br></button>
+        <button class="btn" id="pink"></br></button>
+        <button class="btn" id="brown"></br></button>
+        <button class="btn" id="black"></br></button>
+        <button class="btn" id="gray"></br></button>
+        <button class="btn" id="white"></br></button>
+    </div>
+{{#unless username}}
+    <div id="logindiv" class="well center-block text-center">
+        <a href="/login?redirect=/place/{{address}}"><button class="btn btn-primary btn-lg">Login To Contribute</button></a>
+    </div>
+{{/unless}}
+</div>
+</div>
+
+<script>
+var colorNames = ["white", "red", "orange",  "green", "blue", "yellow", "cyan", "magenta", "black", "brown", "orangered", "lime", "gray", "gold", "yellowgreen", "lightblue", "indigo", "pink"];
+var hexColors = ['#FFFFFF', '#FF0000', '#FFA500', '#008000', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#000000', '#8B4513', '#FF4B00', '#00FF00', '#808080', '#FFD700', '#9ACD32', '#1E90FF', '#4B0082', '#FF69B4'];
+var rgbColors = [[255, 255, 255], [255, 0, 0], [255, 165, 0], [0, 128, 0], [0, 0, 255], [255, 255, 0], [0, 255, 255], [255, 0, 255], [0, 0, 0], [138, 69, 19], [255, 75, 0], [0, 255, 0], [128, 128, 128], [255, 215, 0], [154, 205, 50], [30, 144, 255], [75, 0, 130], [255, 105, 180]];
+var address = "{{address}}";
+var pixels;
+var width, height;
+var xScale, yScale, defaultScale, zoom;
+var xTrans, yTrans;
+var mouseDown, dragging;
+var canvas, g, image;
+var selectedColor;
+var socket = io();
+var clock, timeLeft, refreshTime;
+
+var redrawCanvas = function() {
+    if(g && pixels) {
+        image = g.createImageData(width, height);
+        for(let y = 0; y < height; y++) {
+            for(let x = 0; x < width; x++) {
+                let i = (y*width)+x;
+                let color = rgbColors[pixels[i]];
+                //let color = rgbColors[i%8];
+                image.data[i*4] = color[0];
+                image.data[i*4 + 1] = color[1];
+                image.data[i*4 + 2] = color[2];
+                image.data[i*4 + 3] = 255;
+            }
+        }
+        g.putImageData(image, 0, 0);
+    }
+};
+
+$(document).ready(function() {
+    canvas = document.getElementById('canvas');
+    slider = $('input.slider').slider();
+    g = canvas.getContext('2d');
+    $.getJSON('/place/'+address+'/api/draw_data.json', function(data) {
+        pixels = data.pixels;
+        width = data.width;
+        height = data.height;
+        canvas.width = width;
+        canvas.height = height;
+        selectedColor = 1;
+        containerWidth = $("#canvasContainer").width();
+        containerHeight = $("#canvasContainer").height();
+        xScale = yScale = defaultScale = Math.min(1.0*containerHeight/height, 1.0*containerWidth/width);
+        zoom = 1;
+        xTrans = ((containerWidth - width)/2.0);
+        yTrans = ((containerHeight - height)/2.0);
+        $("#canvasTranslate").css("transform", "translate("+xTrans+"px, "+yTrans+"px)");
+        $("#canvasScale").css("transform", "scale("+xScale+","+yScale+")");
+        $("#canvasTranslate").css("width", width);
+        $("#canvasTranslate").css("height", height);
+        $("#canvasScale").css("width", width);
+        $("#canvasScale").css("height", height);
+
+        refreshTime = parseInt("{{refreshTime}}");
+        redrawCanvas();
+    });
+
+
+    $.getJSON('/place/'+address+'/api/wait', function(data) {
+        timeLeft = Math.ceil(parseFloat(data));
+        if(timeLeft > 0);
+        startTimer();
+    });
+
+    function formatTime(time) {
+        var minutes = Math.floor(time/60);
+        var seconds = time%60;
+        return minutes+":"+(seconds<10?"0":"")+seconds;
+    }
+
+    function startTimer() {
+        function updateTimer() {
+            $('#timer').html(formatTime(timeLeft));
+            if(timeLeft <= 0) {
+                $('#timer').addClass('hidden');
+                clearInterval(clock);
+            } else {
+                $('#timer').removeClass('hidden');
+            }
+            timeLeft--;
+        }
+
+        updateTimer();
+        clearInterval(clock);
+        clock = setInterval(updateTimer, 1000);
+    }
+
+    slider.on('slide slideStop', function(e) {
+        zoom = 2**((e.value-1)/(defaultScale*2));
+        xScale=yScale=(defaultScale*zoom);
+        $("#canvasScale").css("transform", "scale("+xScale+","+yScale+")");
+    });
+
+
+    $("#canvasContainer").mousedown(function(e) {
+        //Handle dragging
+        var parentOffset = $(this).parent().offset(); 
+        var X = (e.pageX);
+        var Y = (e.pageY);
+        mouseDown = true;
+        dragX = X;
+        dragY = Y;
+    });
+
+    $("body").mouseup(function() {
+        //Handle dragging
+        dragging = false;
+        mouseDown = false;
+        dragX = dragY = -1;
+    });
+
+    $("body").mousemove(function(e) {
+        //Handle dragging
+        if(mouseDown) {
+            var parentOffset = $(this).parent().offset(); 
+            var X = (e.pageX);
+            var Y = (e.pageY);
+            var dx = X - dragX;
+            var dy = Y - dragY;
+            dragging = true;
+            dragX = X;
+            dragY = Y;
+            xTrans += dx;
+            yTrans += dy;
+            $("#canvasTranslate").css("transform", "translate("+xTrans+"px, "+yTrans+"px)");
+        }
+    });
+
+    $("#canvas").mouseup(function(e) {
+        var parentOffset = $(this).parent().offset(); 
+        var X = Math.floor((e.pageX - parentOffset.left)/xScale);
+        var Y = Math.floor((e.pageY - parentOffset.top)/yScale);
+
+        //commit pixel change
+        if(!dragging && timeLeft <= 0 && "{{username}}" != "") {
+            let setEvent = {x: X, y: Y, color: selectedColor};
+            $.post('/place/'+address+'/api/set_pixel', setEvent, function(ret) {
+                timeLeft = refreshTime;
+                startTimer();
+            }).fail(function(err) {
+            });
+        }
+    });
+
+    socket.on('set', function(data) {
+        g.fillStyle = hexColors[data.color];
+        g.fillRect(data.x, data.y, 1, 1);
+    });
+
+    socket.on('connect', function() {
+       socket.emit('address', address);
+    });
+    
+    for(let i = 0; i < colorNames.length; i++) {
+        $("#"+colorNames[i]).css("backgroundColor", hexColors[i]);
+        $("#"+colorNames[i]).click(function(){
+            $("#controls button").removeClass('active');
+            $("#"+colorNames[i]).addClass('active');
+            selectedColor = i;
+        });
+    }
+
+    $(window).resize(function() {
+        containerWidth = $("#canvasContainer").width();
+        containerHeight = $("#canvasContainer").height();
+        defaultScale = Math.min(containerHeight/height, containerWidth / width);
+        xScale=yScale=(defaultScale*zoom);
+        xTrans = ((containerWidth - width)/2);
+        yTrans = ((containerHeight - height)/2);
+        $("#canvasTranslate").css("transform", "translate("+xTrans+"px, "+yTrans+"px)");
+        $("#canvasScale").css("transform", "scale("+xScale+","+yScale+")");
+    });
+
+});
+
+</script>

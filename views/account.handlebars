@@ -1,0 +1,12 @@
+<h2 class="page-header">{{username}} <small>account</small></h2>
+
+<form method="post" action="/api/logout">
+<button class="btn btn-danger" type="submit">Logout</button>
+</form>
+
+<script>
+    $(document).ready(function(){
+        $('.nav li').removeClass('active');
+        $('#nav_account').addClass('active');
+    });
+</script>
