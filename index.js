@@ -376,6 +376,6 @@ function loginGate(req, res, redirect) {
     return true;
 };
 
-http.listen(3000, function() {
-    console.log('PLACES listening on port 3000!');
+http.listen(process.env.PORT, function() {
+    console.log('PLACES listening on port ' + process.env.PORT);
 });
