@@ -41,6 +41,8 @@
     /*Needed to prevent 'ghosting' 
      * while dragging and resizing canvas*/
     outline: 1px solid transparent;
+    width: 100%;
+    height: 100%;
 }
 
 #controls {

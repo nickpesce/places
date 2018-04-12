@@ -6,7 +6,7 @@
     <div id="canvasContainer">
         <div id="canvasTranslate">
             <div id="canvasScale">
-                <canvas id="canvas" style="image-rendering: pixelated"></canvas>
+                <canvas id="canvas" style="image-rendering: pixelated; image-rendering: optimizeSpeed"></canvas>
             </div>
         </div>
     </div>
@@ -32,8 +32,7 @@
         <button class="btn" id="black"></br></button>
         <button class="btn" id="gray"></br></button>
         <button class="btn" id="white"></br></button>
-    </div>
-{{#unless username}}
+    </div> {{#unless username}}
     <div id="logindiv" class="well center-block text-center">
         <a href="/login?redirect=/place/{{address}}"><button class="btn btn-primary btn-lg">Login To Contribute</button></a>
     </div>
@@ -87,7 +86,7 @@ $(document).ready(function() {
         selectedColor = 1;
         containerWidth = $("#canvasContainer").width();
         containerHeight = $("#canvasContainer").height();
-        xScale = yScale = defaultScale = Math.min(1.0*containerHeight/height, 1.0*containerWidth/width);
+        xScale = yScale = defaultScale = Math.min(containerHeight/height, containerWidth/width);
         zoom = 1;
         xTrans = ((containerWidth - width)/2.0);
         yTrans = ((containerHeight - height)/2.0);
@@ -101,7 +100,6 @@ $(document).ready(function() {
         refreshTime = parseInt("{{refreshTime}}");
         redrawCanvas();
     });
-
 
     $.getJSON('/place/'+address+'/api/wait', function(data) {
         timeLeft = Math.ceil(parseFloat(data));
